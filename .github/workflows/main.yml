@@ -1,0 +1,51 @@
+name: Daily Crawling
+
+on:
+  schedule:
+    # 한국 시간 매일 오전 9시 실행 (UTC 기준 0시 0분)
+    # 시간을 바꾸고 싶다면 앞의 숫자를 변경하세요 (예: '30 23 * * *' -> 한국 시간 오전 8시 30분)
+    - cron: '35 17 * * *'
+  workflow_dispatch: # 수동 실행 버튼 활성화 (테스트용)
+
+permissions:
+  contents: write # 저장소에 파일(json)을 다시 쓸 수 있는 권한 부여
+
+jobs:
+  run-crawler:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 저장소의 코드를 내려받음
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. 파이썬 설치 (3.9 버전)
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      # 3. 라이브러리 설치
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      # 4. 크롤러 실행 (환경변수 주입)
+      - name: Run crawler script
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+        run: |
+          python crawling.py
+
+      # 5. [중요] 변경된 sent_posts.json 파일을 깃허브에 저장(Commit & Push)
+      - name: Commit and push if changed
+        run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          
+          # sent_posts.json 파일이 있는지 확인하고 git에 추가
+          git add sent_posts.json
+          
+          # 변경사항이 있는지 확인 (없으면 에러 없이 넘어감)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update sent_posts.json [skip ci]" && git push)
