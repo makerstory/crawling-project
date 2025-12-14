@@ -8,8 +8,16 @@ import os
 # --- 설정 구간 ---
 TARGET_URL = "https://www.gbe.kr/gs/na/ntt/selectNttList.do?mi=19265&bbsId=2577"  # 크롤링 할 사이트 주소
 KEYWORDS = ["채용", "모집", "공고", "늘봄"]
-BOT_TOKEN = "8541608617:AAGLWW1Meg5YovqqmhQzjQ9kSH_d2YwMNlY" # 텔레그램 봇 토큰 os.environ.get('BOT_TOKEN')
-CHAT_ID = 8460700603 # 본인의 챗 ID os.environ.get('CHAT_ID')
+BOT_TOKEN = os.environ.get('BOT_TOKEN') # 텔레그램 봇 토큰 os.environ.get('BOT_TOKEN')
+CHAT_ID = os.environ.get('CHAT_ID') # 본인의 챗 ID os.environ.get('CHAT_ID')
+# 🚨 [추가] CHAT_ID는 숫자여야 하므로, 문자열로 들어온 값을 정수로 변환해야 합니다.
+# (Actions 환경에서는 모든 환경 변수가 문자열로 전달됩니다.)
+try:
+    CHAT_ID = int(CHAT_ID)
+except:
+    # CHAT_ID가 없을 경우 (혹은 문자열 변환 실패 시) 0으로 설정하거나, 종료 처리할 수 있습니다.
+    print("FATAL ERROR: CHAT_ID 환경 변수를 불러오지 못했습니다.")
+    # 필요한 경우 여기서 sys.exit(1) 등을 호출하여 스크립트 실행을 중단할 수 있습니다.
 DATA_FILE = "sent_posts.json" # 중복 방지용 데이터 저장 파일
 
 # --- 알림 발송 함수 (텔레그램) ---
